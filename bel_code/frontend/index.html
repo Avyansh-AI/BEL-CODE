@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="application-name" content="bel-code" />
+  <title>BEL CODE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body data-mode="ai" data-theme="antigravity">
+  <!-- Mobile sidebar backdrop -->
+  <div id="drawer-backdrop" class="drawer-backdrop hidden" aria-hidden="true"></div>
+
+  <!-- ===================================================================
+       TOP CHROME BAR (Matches Reference Minimal Header + "Open IDE" Pill)
+       =================================================================== -->
+  <header class="app-topbar" role="banner">
+    <div class="topbar-left">
+      <div class="brand-lockup" title="BEL CODE">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden="true">
+          <path d="M8.5 6.5L4 12L8.5 17.5" stroke="#93c5fd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M15.5 6.5L20 12L15.5 17.5" stroke="#e5e7eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span class="brand-name">BEL CODE</span>
+      </div>
+
+      <button
+        id="btn-toggle-sidebar"
+        class="top-icon-btn"
+        type="button"
+        title="Toggle Sidebar (Ctrl+B)"
+        aria-label="Toggle Left Sidebar"
+      >
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.4">
+          <rect x="2" y="2.5" width="12" height="11" rx="1.8" />
+          <line x1="6" y1="2.5" x2="6" y2="13.5" />
+        </svg>
+      </button>
+
+      <button id="btn-nav-back" class="top-icon-btn" type="button" title="Back" aria-label="Back">←</button>
+      <button id="btn-nav-forward" class="top-icon-btn" type="button" title="Forward" aria-label="Forward">→</button>
+      <button id="btn-topbar-search" class="top-icon-btn" type="button" title="Search Workspace (Ctrl+P)" aria-label="Search">
+        <svg viewBox="0 0 16 16" width="13.5" height="13.5" fill="none" stroke="currentColor" stroke-width="1.4">
+          <circle cx="7" cy="7" r="4.2" />
+          <line x1="10.2" y1="10.2" x2="13.5" y2="13.5" stroke-linecap="round" />
+        </svg>
+      </button>
+    </div>
+
+    <div class="topbar-right">
+      <button
+        id="btn-header-approvals"
+        class="approval-chip hidden"
+        type="button"
+        title="Pending Human Approvals"
+      >
+        <span>Approval Required</span>
+        <span id="header-approvals-badge" class="chip-count">0</span>
+      </button>
+
+      <span id="runtime-indicator" class="runtime-quiet" title="OpenCode Foundation Status">
+        <span id="runtime-dot" class="status-dot"></span>
+        <span id="runtime-label">Ready</span>
+      </span>
+
+      <button id="btn-more-menu" class="top-icon-btn" type="button" title="Workspace Tools" aria-label="More Options">⋮</button>
+
+      <button id="btn-open-ide" class="open-ide-pill" type="button" title="Switch between AI Workspace and Full IDE">
+        Open IDE
+      </button>
+    </div>
+  </header>
+
+  <!-- Quick Workspace Tools / Command Menu (Hidden unless triggered by Search or ⋮) -->
+  <div id="quick-command-popover" class="floating-popover hidden" role="dialog" aria-label="Workspace Tools">
+    <div class="popover-row">
+      <input id="topbar-quick-search" class="ui-input mono" type="text" placeholder="Search files or switch workspace path..." />
+      <button id="btn-quick-search-go" class="btn btn-primary btn-sm" type="button">Find</button>
+      <button id="btn-close-popover" class="btn btn-ghost btn-sm" type="button">×</button>
+    </div>
+    <div id="popover-results" class="popover-results mono"></div>
+  </div>
+
+  <!-- ===================================================================
+       PRIMARY MODE 1: AI-FIRST WORKSPACE (DEFAULT — Antigravity Philosophy)
+       =================================================================== -->
+  <div id="ai-workspace-mode" class="ai-workspace-shell">
+    <!-- Narrow Vertical Left Sidebar (~275px on desktop, collapsible) -->
+    <aside id="left-panel" class="ai-sidebar" aria-label="Projects and Conversations">
+      <div class="sidebar-top-actions">
+        <button id="btn-new-conversation" class="new-conv-btn" type="button">
+          <span class="plus-glyph">+</span>
+          <span>New Conversation</span>
+        </button>
+
+        <button id="nav-agents-btn" class="sidebar-nav-row" data-modal-view="modal-agents" type="button">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.35">
+            <circle cx="8" cy="5.5" r="2.4" />
+            <path d="M3.5 13C4 10.7 5.8 9.7 8 9.7C10.2 9.7 12 10.7 12.5 13" stroke-linecap="round" />
+          </svg>
+          <span>Agents &amp; Orchestration</span>
+        </button>
+
+        <button id="nav-skills-btn" class="sidebar-nav-row" data-modal-view="modal-skills" type="button">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.35">
+            <path d="M9 2L4 9H8L7 14L12 7H8L9 2Z" stroke-linejoin="round" />
+          </svg>
+          <span>Skills &amp; Customizations</span>
+        </button>
+
+        <button id="nav-connect-ai-btn" class="sidebar-nav-row" data-modal-view="modal-connect-ai" type="button">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.35">
+            <path d="M6.2 9.8L9.8 6.2M4.5 11.5L3.3 10.3C2.4 9.4 2.4 7.9 3.3 7L5.2 5.1C6.1 4.2 7.6 4.2 8.5 5.1M11.5 4.5L12.7 5.7C13.6 6.6 13.6 8.1 12.7 9L10.8 10.9C9.9 11.8 8.4 11.8 7.5 10.9" stroke-linecap="round" />
+          </svg>
+          <span>Connect Your AI</span>
+        </button>
+      </div>
+
+      <div class="projects-header-row">
+        <span class="projects-heading">Projects</span>
+        <div class="projects-header-tools">
+          <button id="btn-add-project" class="icon-btn-xs" type="button" title="Open Workspace Folder">+</button>
+          <button id="btn-refresh-projects" class="icon-btn-xs" type="button" title="Refresh Projects">↻</button>
+        </div>
+      </div>
+
+      <div id="project-open-inline" class="inline-project-open hidden">
+        <input id="workspace-path-input" class="ui-input mono" type="text" placeholder="Path to workspace folder..." />
+        <button id="btn-select-workspace" class="btn btn-primary btn-xs" type="button">Open</button>
+      </div>
+
+      <!-- Collapsible Project Folders & Their Conversations -->
+      <div id="sidebar-projects-tree" class="projects-tree-scroll" aria-label="Project Groups">
+        <div class="muted-placeholder">Loading projects...</div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button id="nav-settings-btn" class="sidebar-nav-row" data-modal-view="modal-settings" type="button">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.35">
+            <circle cx="8" cy="8" r="2.1" />
+            <path d="M8 2.4V3.7M8 12.3V13.6M2.4 8H3.7M12.3 8H13.6M4 4L5 5M11 11L12 12M12 4L11 5M5 11L4 12" stroke-linecap="round" />
+          </svg>
+          <span>Settings</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Deep-Black AI Canvas (Occupies Almost Entire Available Screen) -->
+    <main id="center-panel" class="ai-main-canvas" role="main">
+      <!-- Empty / Welcome State (Visible when no conversation is active) -->
+      <section id="welcome-canvas" class="welcome-stage">
+        <div class="welcome-center">
+          <div class="welcome-emblem" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="44" height="44" fill="none">
+              <path d="M17 14L8 24L17 34" stroke="rgba(255,255,255,0.22)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+              <path d="M31 14L40 24L31 34" stroke="rgba(255,255,255,0.22)" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </div>
+          <h1 class="welcome-title">Welcome to BEL CODE</h1>
+          <p class="welcome-subtitle">Your AI development environment. What shall we build today?</p>
+          <div id="welcome-onboarding-panel" class="welcome-onboarding-panel">
+            <p class="welcome-onboarding-note">Your AI-powered development environment. Choose how you want to connect an AI model:</p>
+            <div class="onboarding-choice-grid">
+              <button id="btn-onboard-free-cloud" class="onboarding-choice-card" type="button">
+                <strong>Connect a Free Cloud AI Provider</strong>
+                <span>Gemini, Groq, OpenRouter Free, Mistral, NVIDIA NIM, SambaNova, Cloudflare</span>
+              </button>
+              <button id="btn-onboard-custom-api" class="onboarding-choice-card" type="button">
+                <strong>Connect Your Own API</strong>
+                <span>Custom OpenAI or Anthropic-compatible endpoint, gateway, or paid API key</span>
+              </button>
+              <button id="btn-onboard-local-ai" class="onboarding-choice-card" type="button">
+                <strong>Use a Local AI Model</strong>
+                <span>Ollama on your machine — 100% offline, private, no API key required</span>
+              </button>
+            </div>
+            <div class="onboarding-footer-row">
+              <span id="welcome-ai-status-pill" class="subtle-pill mono">Checking AI setup...</span>
+              <button id="btn-skip-onboarding" class="btn btn-ghost btn-xs" type="button">Hide guide</button>
+            </div>
+          </div>
+          <div id="welcome-compact-ai-bar" class="welcome-compact-ai-bar hidden">
+            <span id="welcome-compact-ai-label" class="subtle-pill mono">AI ready</span>
+            <button id="btn-reopen-connect-ai" class="btn btn-ghost btn-xs" type="button">Connect Your AI</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Active Conversation Stage (Hidden until conversation started/selected) -->
+      <section id="conversation-canvas" class="conversation-stage hidden" aria-label="Conversation">
+        <header class="conversation-top-strip">
+          <div class="conv-title-meta">
+            <span id="active-conv-title" class="conv-title-text">New Conversation</span>
+            <span id="active-conv-agent-tag" class="subtle-pill mono">build</span>
+          </div>
+          <div class="conv-top-actions">
+            <button id="btn-conv-diff" class="btn btn-ghost btn-xs" type="button">Inspect Changes in IDE</button>
+            <button id="btn-conv-revert" class="btn btn-ghost btn-xs hidden" type="button">Revert Turn</button>
+          </div>
+        </header>
+
+        <!-- Human Approval Gate (Only shown when an action needs approval) -->
+        <div id="active-approval-banner" class="inline-approval-card hidden">
+          <span id="active-approval-description">Approval required for sensitive action.</span>
+          <div class="inline-approval-btns">
+            <button id="btn-approve-inline" class="btn btn-primary btn-xs" type="button">Approve</button>
+            <button id="btn-deny-inline" class="btn btn-xs" type="button">Deny</button>
+          </div>
+        </div>
+
+        <!-- Clean Message Feed -->
+        <div id="ai-conversation-feed" class="conversation-feed"></div>
+      </section>
+
+      <!-- Floating Bottom-Center AI Composer (Signature Centerpiece) -->
+      <div class="composer-dock">
+        <div id="ai-composer-card" class="composer-card">
+          <!-- Top Selector Row inside Composer -->
+          <div class="composer-top-selectors">
+            <select id="composer-project-select" class="composer-meta-select" aria-label="Project">
+              <option value="">BEL CODE</option>
+            </select>
+            <span class="composer-dot-sep">·</span>
+            <select id="composer-env-select" class="composer-meta-select" aria-label="Workspace Environment">
+              <option value="local">Local Checkout</option>
+            </select>
+            <div id="attached-context-chips" class="attached-chips-inline"></div>
+          </div>
+
+          <!-- Natural Language Input -->
+          <textarea
+            id="task-composer-input"
+            class="composer-main-input"
+            rows="2"
+            placeholder="Ask BEL CODE to build, modify, debug or improve anything..."
+            aria-label="Prompt Composer"
+          ></textarea>
+
+          <!-- Attachment Picker Popover (toggled by + button) -->
+          <div id="attach-menu" class="attach-popover hidden">
+            <button id="btn-attach-file" class="attach-opt" type="button">Attach Workspace File</button>
+            <button id="btn-attach-diff" class="attach-opt" type="button">Attach Git Diff</button>
+            <button id="btn-attach-problems" class="attach-opt" type="button">Attach Workspace Errors</button>
+          </div>
+
+          <!-- Bottom Controls Row -->
+          <div class="composer-bottom-controls">
+            <div class="composer-left-controls">
+              <button id="btn-open-attach" class="composer-icon-btn" type="button" title="Add attachment or context">+</button>
+
+              <select id="composer-model-select" class="composer-control-select" aria-label="Model">
+                <option value="freellm/default">FreeLLM Default</option>
+              </select>
+
+              <select id="composer-reasoning-select" class="composer-control-select" aria-label="Reasoning Level">
+                <option value="standard">Balanced</option>
+                <option value="high">Deep Reasoning</option>
+                <option value="fast">Fast</option>
+              </select>
+
+              <select id="composer-agent-select" class="composer-control-select" aria-label="Agent Mode">
+                <option value="build">Agent: Build</option>
+                <option value="plan">Agent: Plan</option>
+                <option value="debug">Agent: Debug</option>
+                <option value="review">Agent: Review</option>
+              </select>
+
+              <select id="composer-permission-mode" class="composer-control-select" aria-label="Safety Mode">
+                <option value="ask">Ask</option>
+                <option value="supervised">Supervised</option>
+                <option value="autonomous">Autonomous</option>
+              </select>
+            </div>
+
+            <div class="composer-right-controls">
+              <button id="btn-voice-input" class="composer-icon-btn" type="button" title="Voice Input" aria-label="Voice Input">
+                <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.35">
+                  <rect x="6" y="2.2" width="4" height="7" rx="2" />
+                  <path d="M4 7.8C4 10 5.8 11.5 8 11.5C10.2 11.5 12 10 12 7.8M8 11.5V14" stroke-linecap="round" />
+                </svg>
+              </button>
+
+              <button id="btn-execute-task" class="composer-send-btn" type="button" title="Send (Enter)">
+                <svg id="send-icon-arrow" viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <path d="M8 12.5V3.5M8 3.5L4 7.5M8 3.5L12 7.5" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+              </button>
+
+              <button id="btn-stop-execution" class="composer-send-btn stop hidden" type="button" title="Stop Execution">■</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===================================================================
+       PRIMARY MODE 2: DEDICATED IDE MODE (Opened ONLY via "Open IDE")
+       =================================================================== -->
+  <div id="ide-mode-container" class="ide-mode-shell hidden" aria-label="Integrated Development Environment">
+    <!-- Left IDE Activity + Explorer / Search / Git -->
+    <aside id="ide-left-sidebar" class="ide-sidebar">
+      <div class="ide-rail">
+        <button class="ide-rail-btn active" data-ide-tab="explorer" type="button" title="Explorer">Files</button>
+        <button class="ide-rail-btn" data-ide-tab="search" type="button" title="Search">Find</button>
+        <button class="ide-rail-btn" data-ide-tab="git" type="button" title="Source Control">Git</button>
+      </div>
+      <div class="ide-drawer">
+        <div id="ide-pane-explorer" class="ide-pane active">
+          <div class="ide-pane-head">
+            <span>EXPLORER</span>
+            <div>
+              <button id="btn-ide-new-file" class="icon-btn-xs" type="button" title="New File">+</button>
+              <button id="btn-ide-refresh-tree" class="icon-btn-xs" type="button" title="Refresh">↻</button>
+            </div>
+          </div>
+          <div id="ide-new-file-bar" class="inline-project-open hidden">
+            <input id="ide-new-file-input" class="ui-input mono" type="text" placeholder="path/file.py" />
+            <button id="btn-ide-create-confirm" class="btn btn-primary btn-xs" type="button">Add</button>
+          </div>
+          <div id="ide-file-tree" class="ide-tree-list mono"></div>
+        </div>
+
+        <div id="ide-pane-search" class="ide-pane hidden">
+          <div class="ide-pane-head"><span>SEARCH</span></div>
+          <div class="inline-project-open">
+            <input id="ide-search-input" class="ui-input" type="text" placeholder="Search files..." />
+            <button id="btn-ide-search-go" class="btn btn-xs" type="button">Go</button>
+          </div>
+          <div id="ide-search-results" class="ide-tree-list mono"></div>
+        </div>
+
+        <div id="ide-pane-git" class="ide-pane hidden">
+          <div class="ide-pane-head"><span>SOURCE CONTROL</span></div>
+          <div class="ide-git-box">
+            <input id="git-checkpoint-label" class="ui-input" type="text" placeholder="Checkpoint label..." />
+            <div style="display:flex;gap:6px;margin-top:6px;">
+              <button id="btn-git-create-checkpoint" class="btn btn-primary btn-xs" type="button">Checkpoint</button>
+              <button id="btn-git-rollback" class="btn btn-xs" type="button">Rollback</button>
+            </div>
+          </div>
+          <div id="ide-git-changed" class="ide-tree-list mono"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center IDE Editor + Bottom Terminal / Problems / Output / Debug -->
+    <div class="ide-center-col">
+      <div class="ide-editor-bar">
+        <div id="ide-tabs-strip" class="ide-tabs-scroll"></div>
+        <div class="ide-editor-actions">
+          <button id="btn-editor-mode-code" class="seg-btn active" type="button">Code</button>
+          <button id="btn-editor-mode-diff" class="seg-btn" type="button">Diff</button>
+          <button id="btn-save-file" class="btn btn-primary btn-xs" type="button">Save</button>
+          <button id="btn-ide-toggle-bottom" class="btn btn-xs" type="button">Terminal</button>
+        </div>
+      </div>
+
+      <div class="ide-editor-stage">
+        <div id="ide-editor-empty" class="ide-empty-msg">Select a file from Explorer to view or edit code.</div>
+        <div id="ide-editor-surface" class="ide-editor-surface hidden">
+          <pre id="editor-line-gutter" class="editor-gutter mono">1</pre>
+          <div class="editor-layered-wrap">
+            <pre id="editor-highlight-layer" class="editor-highlight mono"></pre>
+            <textarea id="editor-textarea" class="editor-textarea mono" spellcheck="false"></textarea>
+          </div>
+        </div>
+        <div id="ide-diff-surface" class="ide-diff-surface hidden">
+          <div id="editor-diff-table" class="diff-viewer mono"></div>
+        </div>
+      </div>
+
+      <section id="ide-bottom-panel" class="ide-bottom-panel">
+        <div class="ide-bottom-bar">
+          <div class="ide-bottom-tabs">
+            <button class="bottom-tab active" data-bottom-tab="terminal" type="button">Terminal</button>
+            <button class="bottom-tab" data-bottom-tab="problems" type="button">Problems <span id="problems-count-badge">0</span></button>
+            <button class="bottom-tab" data-bottom-tab="output" type="button">Output</button>
+            <button class="bottom-tab" data-bottom-tab="debug" type="button">Debug Console</button>
+            <button class="bottom-tab" data-bottom-tab="logs" type="button">Task Logs</button>
+          </div>
+          <button id="btn-run-qa-tests" class="btn btn-xs" type="button">Run Tests</button>
+        </div>
+        <div class="ide-bottom-body">
+          <div id="bottom-tab-terminal" class="bottom-tab-pane active">
+            <div class="terminal-input-row">
+              <span class="mono" style="color:#93c5fd;">$</span>
+              <input id="terminal-cmd-input" class="terminal-input mono" type="text" placeholder="Run command in workspace..." />
+              <button id="btn-run-terminal" class="btn btn-xs" type="button">Run</button>
+            </div>
+            <pre id="terminal-output-box" class="bottom-scroll mono">$ Ready.</pre>
+          </div>
+          <div id="bottom-tab-problems" class="bottom-tab-pane">
+            <div id="bottom-problems-list" class="bottom-scroll mono">No problems.</div>
+          </div>
+          <div id="bottom-tab-output" class="bottom-tab-pane">
+            <pre id="bottom-output-stream" class="bottom-scroll mono">Ready.</pre>
+          </div>
+          <div id="bottom-tab-debug" class="bottom-tab-pane">
+            <pre id="debug-console-output" class="bottom-scroll mono">Debug Console ready.</pre>
+          </div>
+          <div id="bottom-tab-logs" class="bottom-tab-pane">
+            <div id="bottom-logs-list" class="bottom-scroll mono">Loading logs...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right Docked AI Coding Assistant inside IDE -->
+    <aside class="ide-ai-dock">
+      <div class="ide-pane-head"><span>AI CODING ASSISTANT</span></div>
+      <div id="ide-ai-mirror-feed" class="ide-ai-feed"></div>
+      <div class="ide-ai-input-wrap">
+        <textarea id="ide-ai-prompt" class="ui-input" rows="2" placeholder="Ask AI in IDE context..."></textarea>
+        <button id="btn-ide-ai-send" class="btn btn-primary btn-xs" type="button" style="margin-top:6px;width:100%;">Send to Agent</button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ===================================================================
+       CLEAN OVERLAY DIALOGS (Agents, Skills, Settings — On-Demand Only)
+       =================================================================== -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <!-- Modal: Agents & Benchmarks -->
+    <section id="modal-agents" class="clean-modal hidden" role="dialog" aria-label="Agents and Benchmarks">
+      <header class="modal-head">
+        <h2>Agents &amp; Orchestration</h2>
+        <button class="btn btn-ghost btn-xs modal-close-btn" type="button">Close</button>
+      </header>
+      <div class="modal-body">
+        <div class="kv-grid-compact">
+          <div><span class="muted">Active Agent</span><strong id="agent-ws-name">build</strong></div>
+          <div><span class="muted">Status</span><strong id="agent-ws-status">Idle</strong></div>
+          <div><span class="muted">Progress</span><strong id="agent-ws-progress" class="mono">0%</strong></div>
+        </div>
+        <h3 class="modal-subhead">Available Agents</h3>
+        <div id="agents-registry-output" class="clean-list"></div>
+        <h3 class="modal-subhead">Acceptance Suite</h3>
+        <button id="btn-run-all-benchmarks" class="btn btn-sm" type="button">Run Acceptance Benchmarks</button>
+        <div id="benchmarks-output" class="clean-list" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
+    <!-- Modal: Skills & Customizations -->
+    <section id="modal-skills" class="clean-modal hidden" role="dialog" aria-label="Skills and Customizations">
+      <header class="modal-head">
+        <h2>Skills &amp; Forge</h2>
+        <button class="btn btn-ghost btn-xs modal-close-btn" type="button">Close</button>
+      </header>
+      <div class="modal-body">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <input id="forge-skill-name" class="ui-input" type="text" placeholder="Skill name..." />
+          <input id="forge-skill-desc" class="ui-input" type="text" placeholder="Description..." />
+          <button id="btn-forge-skill-submit" class="btn btn-primary btn-sm" type="button">Forge Skill</button>
+        </div>
+        <div id="skills-list-output" class="clean-list"></div>
+        <h3 class="modal-subhead">Workspace Analyzers</h3>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button class="btn btn-xs adv-tool-btn" data-tool="security-scan" type="button">Security Scan</button>
+          <button class="btn btn-xs adv-tool-btn" data-tool="database" type="button">Database</button>
+          <button class="btn btn-xs adv-tool-btn" data-tool="profile" type="button">Profile</button>
+          <button class="btn btn-xs adv-tool-btn" data-tool="cicd" type="button">CI/CD</button>
+          <button class="btn btn-xs adv-tool-btn" data-tool="self-evaluate" type="button">Self-Evaluate</button>
+        </div>
+        <div id="advanced-tool-output" class="clean-list mono" style="margin-top:8px;"></div>
+      </div>
+    </section>
+
+    <!-- Modal: Connect Your AI (Guided 8-Step Setup Wizard driven by provider registry) -->
+    <section id="modal-connect-ai" class="clean-modal clean-modal-wide hidden" role="dialog" aria-label="Connect Your AI">
+      <header class="modal-head">
+        <div>
+          <h2>Connect Your AI</h2>
+          <p class="modal-subtitle">Choose an AI provider and get BEL CODE running in minutes.</p>
+        </div>
+        <button class="btn btn-ghost btn-xs modal-close-btn" type="button">Close</button>
+      </header>
+      <div class="modal-body">
+        <div id="connect-ai-tabs" class="wizard-tabs">
+          <button class="wizard-tab-btn active" data-wizard-tab="free_cloud" type="button">Free Cloud Providers</button>
+          <button class="wizard-tab-btn" data-wizard-tab="local" type="button">Local AI (Ollama)</button>
+          <button class="wizard-tab-btn" data-wizard-tab="custom" type="button">Connect Your Own API</button>
+        </div>
+
+        <div class="wizard-split-layout">
+          <aside class="wizard-provider-list" id="wizard-provider-list" aria-label="Verified AI Providers">
+            <div class="muted-placeholder">Loading verified providers...</div>
+          </aside>
+
+          <div class="wizard-detail-pane" id="wizard-detail-pane">
+            <!-- Steps 1-8 rendered dynamically from /api/providers/registry & custom form -->
+            <div id="wizard-provider-card"></div>
+
+            <div id="wizard-custom-form" class="wizard-section-box hidden">
+              <h3 class="modal-subhead" style="margin-top:0;">Custom OpenAI / Anthropic Compatible Endpoint</h3>
+              <div class="wizard-form-grid">
+                <input id="custom-provider-name" class="ui-input" type="text" placeholder="Provider Name (e.g. LiteLLM Proxy)" />
+                <select id="custom-provider-mode" class="ui-select">
+                  <option value="openai">OpenAI-compatible (/chat/completions)</option>
+                  <option value="anthropic">Anthropic-compatible (/messages)</option>
+                </select>
+                <input id="custom-provider-url" class="ui-input mono" type="text" placeholder="Base URL (e.g. http://localhost:4000/v1)" />
+                <input id="custom-provider-model" class="ui-input mono" type="text" placeholder="Default Model ID" />
+                <input id="custom-provider-key" class="ui-input" type="password" placeholder="Optional API Key (stored encrypted)" />
+                <input id="custom-provider-label" class="ui-input" type="text" value="default" placeholder="Key Label (personal / work)" />
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+                <label class="wizard-check"><input id="custom-provider-primary" type="checkbox" checked /> Set as Primary</label>
+                <button id="btn-register-custom-provider" class="btn btn-primary btn-sm" type="button">Save Custom Provider</button>
+              </div>
+            </div>
+
+            <div id="wizard-config-box" class="wizard-section-box">
+              <div class="wizard-form-grid">
+                <div>
+                  <label class="wizard-field-label" for="wizard-model-select">
+                    Step 5 · Default Model <span id="wizard-models-count" class="muted mono"></span>
+                  </label>
+                  <div style="display:flex;gap:6px;">
+                    <select id="wizard-model-select" class="ui-select mono"></select>
+                    <button id="btn-wizard-fetch-models" class="btn btn-sm" type="button" title="Fetch all models available for this key">Fetch Models</button>
+                  </div>
+                </div>
+                <div>
+                  <label class="wizard-field-label" for="wizard-role-select">Routing Role</label>
+                  <select id="wizard-role-select" class="ui-select">
+                    <option value="primary">Primary AI Provider</option>
+                    <option value="secondary">Secondary Failover</option>
+                    <option value="fallback">Final Fallback</option>
+                  </select>
+                </div>
+                <div id="wizard-account-id-wrap" class="hidden">
+                  <label class="wizard-field-label" for="wizard-account-id-input">Cloudflare Account ID</label>
+                  <input id="wizard-account-id-input" class="ui-input mono" type="text" placeholder="32-char Cloudflare Account ID..." />
+                </div>
+                <div>
+                  <label class="wizard-field-label" for="wizard-key-label-input">Key Label</label>
+                  <input id="wizard-key-label-input" class="ui-input" type="text" value="default" placeholder="default / personal / work" />
+                </div>
+              </div>
+
+              <div id="wizard-api-key-wrap" style="margin-top:8px;">
+                <label class="wizard-field-label" for="wizard-api-key-input">Step 4 · Paste API Key (encrypted locally in SecretVault)</label>
+                <div style="display:flex;gap:6px;">
+                  <input id="wizard-api-key-input" class="ui-input" type="password" autocomplete="off" placeholder="Paste API key here (leave blank to keep existing or use env var)..." />
+                  <button id="btn-wizard-toggle-key" class="btn btn-sm" type="button">Show</button>
+                </div>
+              </div>
+
+              <div style="margin-top:8px;">
+                <label class="wizard-field-label" for="wizard-base-url-input">Base URL Override (optional)</label>
+                <input id="wizard-base-url-input" class="ui-input mono" type="text" placeholder="Official endpoint..." />
+              </div>
+
+              <div class="wizard-actions-bar">
+                <button id="btn-wizard-test-save" class="btn btn-primary btn-sm" type="button">Save &amp; Test Connection</button>
+                <button id="btn-wizard-finish" class="btn btn-sm" type="button">Finish &amp; Start Coding</button>
+                <span id="wizard-status-output" class="muted mono" style="font-size:11.5px;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal: Settings (Providers, FreeLLM Key, Budgets, Memory, Security) -->
+    <section id="modal-settings" class="clean-modal hidden" role="dialog" aria-label="Settings">
+      <header class="modal-head">
+        <h2>Settings</h2>
+        <button class="btn btn-ghost btn-xs modal-close-btn" type="button">Close</button>
+      </header>
+      <div class="modal-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3 class="modal-subhead" style="margin:0;">AI Provider &amp; API Key Vault</h3>
+          <button id="btn-settings-open-wizard" class="btn btn-xs" type="button">Open Guided Wizard</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <select id="provider-id-select" class="ui-select">
+            <option value="gemini">Google Gemini API (Free Tier)</option>
+            <option value="groq">Groq (Free Tier)</option>
+            <option value="openrouter">OpenRouter (Free Models)</option>
+            <option value="mistral">Mistral AI (Free Experiment Tier)</option>
+            <option value="cloudflare">Cloudflare Workers AI</option>
+            <option value="nvidia">NVIDIA NIM</option>
+            <option value="sambanova">SambaNova Cloud</option>
+            <option value="cerebras">Cerebras</option>
+            <option value="ollama">Ollama (Local, No Key)</option>
+            <option value="freellm">FreeLLM (Local Gateway)</option>
+            <option value="tokenharbor">TokenHarbor</option>
+            <option value="openai">OpenAI (Paid)</option>
+            <option value="anthropic">Anthropic (Paid)</option>
+          </select>
+          <input id="provider-api-key" class="ui-input" type="password" autocomplete="off" placeholder="Enter API Key (stored encrypted)..." />
+          <input id="provider-base-url" class="ui-input mono" type="text" placeholder="Optional Base URL..." />
+          <input id="provider-default-model" class="ui-input mono" type="text" placeholder="Default Model..." />
+          <input id="provider-account-label" class="ui-input" type="text" value="default" placeholder="Key Label (default, work, personal)..." />
+          <select id="provider-role-select" class="ui-select">
+            <option value="">Keep current routing role</option>
+            <option value="primary">Set as Primary Provider</option>
+            <option value="secondary">Set as Secondary Failover</option>
+            <option value="fallback">Set as Fallback Provider</option>
+          </select>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-top:8px;">
+          <button id="btn-save-provider" class="btn btn-primary btn-sm" type="button">Save Key</button>
+          <button id="btn-test-provider" class="btn btn-sm" type="button">Test Connection</button>
+          <button id="btn-discover-models" class="btn btn-sm" type="button">Discover Models</button>
+          <span id="provider-action-output" class="muted mono" style="font-size:11px;"></span>
+        </div>
+        <div id="provider-discovered-models-row" class="hidden" style="margin-top:8px;">
+          <label class="wizard-field-label" for="provider-models-discovered-select">Models Available for Key (select to set default)</label>
+          <select id="provider-models-discovered-select" class="ui-select mono"></select>
+        </div>
+        <div id="providers-catalog-grid" class="clean-list" style="margin-top:10px;"></div>
+
+        <h3 class="modal-subhead">Cost Budgets (USD)</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;">
+          <input id="budget-per-task" class="ui-input mono" type="number" step="0.5" value="2" title="Per task USD" />
+          <input id="budget-per-project" class="ui-input mono" type="number" step="1" value="10" title="Per project USD" />
+          <input id="budget-global" class="ui-input mono" type="number" step="1" value="25" title="Global USD" />
+          <button id="btn-save-routing-budget" class="btn btn-sm" type="button">Save Budget</button>
+        </div>
+
+        <h3 class="modal-subhead">Engineering Memory</h3>
+        <div style="display:flex;gap:6px;">
+          <input id="memory-title" class="ui-input" type="text" placeholder="Title..." />
+          <input id="memory-content" class="ui-input" type="text" placeholder="Architectural note..." />
+          <button id="btn-memory-save" class="btn btn-sm" type="button">Remember</button>
+        </div>
+        <div id="memory-list-output" class="clean-list" style="margin-top:8px;"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast notifications -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "theme": "bel-dark-graphite",
+  "model": "freellm/auto",
+  "small_model": "freellm/auto:fast",
+  "default_agent": "build",
+  "autoupdate": false,
+  "share": "disabled",
+  "instructions": [
+    "UPSTREAM_MODIFICATIONS.md",
+    "README.md"
+  ],
+  "provider": {
+    "freellm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "FreeLLM",
+      "env": [
+        "FREELLM_API_KEY"
+      ],
+      "options": {
+        "baseURL": "http://localhost:31415/v1",
+        "apiKey": "{env:FREELLM_API_KEY}",
+        "secondaryBaseURL": "https://apifreellm.com/api/v1/chat",
+        "timeout": 20000
+      },
+      "models": {
+        "auto": {
+          "id": "auto",
+          "name": "FreeLLM Auto Router (Balanced)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 64000,
+            "output": 8192
+          },
+          "options": {
+            "routing_mode": "auto",
+            "prompt_tool_fallback": true
+          }
+        },
+        "auto:fast": {
+          "id": "auto:fast",
+          "name": "FreeLLM Auto Fast (Low Latency)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": false,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 32000,
+            "output": 4096
+          },
+          "options": {
+            "routing_mode": "fast",
+            "prompt_tool_fallback": true
+          }
+        },
+        "auto:smart": {
+          "id": "auto:smart",
+          "name": "FreeLLM Auto Smart (High Reasoning)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 128000,
+            "output": 16384
+          },
+          "options": {
+            "routing_mode": "smart",
+            "prompt_tool_fallback": true
+          }
+        },
+        "fusion": {
+          "id": "fusion",
+          "name": "FreeLLM Multi-Model Fusion",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": false,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 64000,
+            "output": 8192
+          },
+          "options": {
+            "routing_mode": "fusion",
+            "prompt_tool_fallback": true
+          }
+        },
+        "qwen-2.5-coder-32b": {
+          "id": "qwen-2.5-coder-32b",
+          "name": "Qwen 2.5 Coder 32B (via FreeLLM)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": false,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 32768,
+            "output": 8192
+          }
+        },
+        "deepseek-r1-free": {
+          "id": "deepseek-r1-free",
+          "name": "DeepSeek R1 Reasoning (via FreeLLM)",
+          "tool_call": false,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 64000,
+            "output": 8192
+          },
+          "options": {
+            "prompt_tool_fallback": true
+          }
+        },
+        "llama-3.3-70b-free": {
+          "id": "llama-3.3-70b-free",
+          "name": "Llama 3.3 70B Instruct (via FreeLLM)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": false,
+          "streaming": true,
+          "cost": {
+            "input": 0,
+            "output": 0
+          },
+          "limit": {
+            "context": 64000,
+            "output": 8192
+          }
+        }
+      }
+    },
+    "tokenharbor": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Token Harbor Verified API",
+      "env": [
+        "TOKENHARBOR_API_KEY"
+      ],
+      "options": {
+        "baseURL": "https://tokenharbor.ai/v1",
+        "apiKey": "{env:TOKENHARBOR_API_KEY}"
+      },
+      "models": {
+        "claude-3-7-sonnet-latest": {
+          "id": "claude-3-7-sonnet-latest",
+          "name": "Claude 3.7 Sonnet (Token Harbor)",
+          "tool_call": true,
+          "attachment": true,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": true,
+          "limit": {
+            "context": 200000,
+            "output": 16384
+          }
+        },
+        "gpt-4o": {
+          "id": "gpt-4o",
+          "name": "GPT-4o (Token Harbor)",
+          "tool_call": true,
+          "attachment": true,
+          "temperature": true,
+          "reasoning": false,
+          "streaming": true,
+          "limit": {
+            "context": 128000,
+            "output": 16384
+          }
+        },
+        "deepseek-r1": {
+          "id": "deepseek-r1",
+          "name": "DeepSeek R1 (Token Harbor)",
+          "tool_call": true,
+          "attachment": false,
+          "temperature": true,
+          "reasoning": true,
+          "streaming": true,
+          "limit": {
+            "context": 128000,
+            "output": 16384
+          }
+        }
+      }
+    },
+    "groq": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Groq",
+      "env": [
+        "GROQ_API_KEY"
+      ],
+      "options": {
+        "baseURL": "https://api.groq.com/openai/v1",
+        "apiKey": "{env:GROQ_API_KEY}"
+      },
+      "models": {}
+    }
+  },
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "freellm/auto",
+      "description": "Primary full-access software engineering agent for building, editing, testing, and verifying code.",
+      "prompt": "You are BEL Code's primary Build agent powered by the OpenCode foundation and FreeLLM intelligence.",
+      "tools": {
+        "read": true,
+        "edit": true,
+        "write": true,
+        "bash": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "patch": true,
+        "todowrite": true,
+        "todoread": true,
+        "webfetch": true,
+        "task": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "allow"
+      }
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "freellm/auto:smart",
+      "description": "Read-only architecture and planning agent for codebase exploration, impact analysis, and staged execution plans.",
+      "prompt": "You are BEL Code's Plan agent. Analyze the repository and formulate verified engineering plans without mutating files.",
+      "tools": {
+        "read": true,
+        "edit": false,
+        "write": false,
+        "bash": false,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "todowrite": true,
+        "todoread": true,
+        "webfetch": true
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "ask",
+        "webfetch": "allow"
+      }
+    },
+    "architect": {
+      "mode": "subagent",
+      "model": "freellm/auto:smart",
+      "description": "Specialized system architect subagent for module boundaries, API contracts, and dependency graphs.",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "edit": false,
+        "bash": false
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "allow"
+      }
+    },
+    "reviewer": {
+      "mode": "subagent",
+      "model": "freellm/auto:smart",
+      "description": "Specialized code review subagent for inspecting diffs, correctness, edge cases, and maintainability.",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "edit": false,
+        "bash": false
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      }
+    },
+    "debugger": {
+      "mode": "subagent",
+      "model": "freellm/auto:smart",
+      "description": "Specialized debugging subagent for stack trace analysis, fault localization, and minimal verified fixes.",
+      "tools": {
+        "read": true,
+        "edit": true,
+        "bash": true,
+        "grep": true,
+        "glob": true
+      },
+      "permission": {
+        "edit": "allow",
+        "bash": "allow",
+        "webfetch": "deny"
+      }
+    },
+    "security_auditor": {
+      "mode": "subagent",
+      "model": "freellm/auto:smart",
+      "description": "Specialized security auditor subagent for secret scanning, injection detection, and permission boundary audits.",
+      "tools": {
+        "read": true,
+        "grep": true,
+        "glob": true,
+        "list": true,
+        "edit": false,
+        "bash": false
+      },
+      "permission": {
+        "edit": "deny",
+        "bash": "deny",
+        "webfetch": "deny"
+      }
+    }
+  },
+  "permission": {
+    "edit": "ask",
+    "bash": {
+      "*": "ask",
+      "rm -rf *": "deny",
+      "git push --force*": "deny",
+      "git reset --hard*": "ask"
+    },
+    "webfetch": "allow"
+  }
+}

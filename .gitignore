@@ -1,0 +1,59 @@
+# Runtime state, encrypted vaults, databases, and environment secrets
+.bel_code/
+vault.enc
+*.db
+*.sqlite
+*.sqlite3
+audit.jsonl
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Python bytecode and packaging
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+develop-eggs/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+# Testing, linting, and coverage caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Node / JS build outputs
+node_modules/
+
+# Logs, temporary files, and OS artifacts
+*.log
+*.bak
+*.orig
+tmp/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE local settings
+.vscode/
+.idea/
+*.swp
+*.swo

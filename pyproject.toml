@@ -45,6 +45,12 @@ Homepage = "https://github.com/Avyansh-AI/BEL-CODE"
 Repository = "https://github.com/Avyansh-AI/BEL-CODE"
 Issues = "https://github.com/Avyansh-AI/BEL-CODE/issues"
 
+[tool.setuptools.packages.find]
+include = ["bel_code*"]
+
+[tool.setuptools.package-data]
+bel_code = ["frontend/*", "providers/*.json", "opencode_bridge/*.mjs"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
